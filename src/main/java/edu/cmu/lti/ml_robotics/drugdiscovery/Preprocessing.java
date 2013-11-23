@@ -21,20 +21,20 @@ import weka.core.converters.ArffLoader.ArffReader;
 
 public class Preprocessing {
 
-	static int numFeaturesDorothea = 100000;
-	static int numFeaturesThrombin=139351;
-	static int numFeatures=numFeaturesThrombin;
+	//static int numFeaturesDorothea = 100000;
+	//static int numFeaturesThrombin=139351;
+	int numFeatures;
 	double minimum = -0.5;
 	double maximum = 0.5;
 	double alpha=0.01;
 	static double C=0.0001;
 
+	public Preprocessing(int n){
+		numFeatures=n;
+	}
 	public static void main(String args[]) {
 
 		try {
-			Preprocessing main = new Preprocessing();
-
-			// main.findUniqueFeatures();
 
 			String trainFile = "data/Thrombin.trainset/Thrombin.train";//"data/Dorothea.trainset/dorothea_train.data";
 			String validationFile = "data/Thrombin.testset/Thrombin.test";//"data/Dorothea.testset/dorothea_valid.data";
@@ -43,6 +43,14 @@ public class Preprocessing {
 			String arffTrainFile="data/Thrombin.trainset/Thrombin.train.arff";//"data/Dorothea.trainset/dorothea_train.data.arff";
 			String arffValidFile="data/Thrombin.testset/Thrombin.testset.arff";//"data/Dorothea.testset/dorothea_valid.data.arff";
 			String testLabelFile="data/Thrombin.testset/thrombin.test.labels";
+
+			
+			StatisticalAnalyser statsAnalyser=new StatisticalAnalyser();
+			int n=statsAnalyser.getNumFeatures(trainFile);
+			Preprocessing main = new Preprocessing(n);
+
+			// main.findUniqueFeatures();
+
 			
 			
 			//main.separateLabelsFromThrombinDataSet(validationFile, "data/Thrombin.testset/Thrombin.test",testLabelFile);

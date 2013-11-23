@@ -13,9 +13,9 @@ public class Utils {
 		ArrayList<Integer> labels = new ArrayList<Integer>();
 		while ((str = bfr.readLine()) != null) {
 			str=str.trim();
-			Integer label = 0;
-			if(str.startsWith("A")){
-				label=0;
+			Integer label = -1;
+			if(str.startsWith("A")||str.startsWith("1")){
+				label=1;
 			}
 			
 			labels.add(label);

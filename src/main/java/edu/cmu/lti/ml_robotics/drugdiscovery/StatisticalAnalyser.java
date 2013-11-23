@@ -7,22 +7,49 @@ import java.util.HashSet;
 
 public class StatisticalAnalyser {
 
-	static int numFeaturesThrombin = 139351;
-
+	//static int numFeaturesThrombin = 139351;
+	//static int numFeaturesDorothea = 100000;
+	int numFeatures;
+	
 	public static void main(String args[]) {
 
 		try {
 			StatisticalAnalyser main = new StatisticalAnalyser();
 			String trainFile = "data/Thrombin.trainset/Thrombin.train";
 			String labelFile = "data/Thrombin.trainset/thrombin.labels";
-			
-			main.findSignificantFeatures(trainFile, labelFile);
+			main.getNumFeatures("data/Dorothea.trainset/dorothea_train.data");
+			//main.findSignificantFeatures(trainFile, labelFile);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
+	public int getNumFeatures(String trainFile) throws Exception{
+		
+		BufferedReader bfr=new BufferedReader(new FileReader(trainFile));
+		String str;
+		int maxFeatureId=-1;
+		while((str=bfr.readLine())!=null){
+			str=str.trim();
+			String rec[]=str.split("[ ]");
+			for(int i=0;i<rec.length;i++){
+				if(rec[i].equals("")){
+					continue;
+				}
+				Integer intVal=Integer.parseInt(rec[i]);
+				if(maxFeatureId<intVal){
+					maxFeatureId=intVal;
+				}
+			}
+		}
+		bfr.close();
+		bfr=null;
+		System.out.println(maxFeatureId);
+		numFeatures=maxFeatureId;
+		return maxFeatureId;
+	}
+	
 	public void findSignificantFeatures(String trainFile, String labelFile)
 			throws Exception {
 
@@ -62,8 +89,8 @@ public class StatisticalAnalyser {
 		lblFile = null;
 
 		int lambda=3;
-		int features[]=new int[numFeaturesThrombin];
-		for (int j = 0; j < numFeaturesThrombin; j++) {
+		int features[]=new int[numFeatures];
+		for (int j = 0; j < numFeatures; j++) {
 
 			int sumPos=0;
 			int sumNeg=0;

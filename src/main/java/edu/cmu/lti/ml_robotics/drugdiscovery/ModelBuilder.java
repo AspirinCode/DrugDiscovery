@@ -14,29 +14,31 @@ public class ModelBuilder {
 
 		try {
 			ModelBuilder modelBuilder=new ModelBuilder();
-			/*String orgTrainingFile="data/Dorothea.trainset/dorothea_train.data";
+			String orgTrainingFile="data/Dorothea.trainset/dorothea_train.data";
 			String labelFile="data/Dorothea.trainset/dorothea_train.labels";
-			String trainArffFile="data/Dorothea.trainset/dorothea_train.data.arff";*/
+			String trainArffFile="data/Dorothea.trainset/dorothea_train.data.arff";
 			
-			String orgTrainingFile="data/Thrombin.trainset/Thrombin.train";
+			/*String orgTrainingFile="data/Thrombin.trainset/Thrombin.train";
 			String labelFile="data/Thrombin.trainset/thrombin.labels";
-			String trainArffFile="data/Thrombin.trainset/Thrombin.train.arff";
+			String trainArffFile="data/Thrombin.trainset/Thrombin.train.arff";*/
 			
-			/*String orgTestFile="data/Dorothea.testset/dorothea_valid.data";
+			String orgTestFile="data/Dorothea.testset/dorothea_valid.data";
 			String testLabelFile="data/Dorothea.testset/dorothea_valid.labels";
-			String testArffFile="data/Dorothea.testset/dorothea_valid.data.arff";*/
+			String testArffFile="data/Dorothea.testset/dorothea_valid.data.arff";
 			
-			String orgTestFile="data/Thrombin.testset/Thrombin.test";
+			/*String orgTestFile="data/Thrombin.testset/Thrombin.test";
 			String testLabelFile="data/Thrombin.testset/ThrombinKey";
-			String testArffFile="data/Thrombin.testset/Thrombin.test.arff";
+			String testArffFile="data/Thrombin.testset/Thrombin.test.arff";*/
 			
-			Preprocessing prepr=new Preprocessing();
+			StatisticalAnalyser statsAnalyser=new StatisticalAnalyser();
+			int numFeatures=statsAnalyser.getNumFeatures(orgTrainingFile);
+			Preprocessing prepr=new Preprocessing(numFeatures);
 			prepr.convertIntoARFF(orgTrainingFile, labelFile, trainArffFile);
 			prepr.convertIntoARFF(orgTestFile, testLabelFile, testArffFile);
 			
 			
-			Classifier classifier=modelBuilder.train(trainArffFile);
-			modelBuilder.test(testArffFile, classifier);
+			Model model=modelBuilder.train(trainArffFile);
+			modelBuilder.test(testArffFile, model.getTrainingSet(),model.getClassifier());
 			
 			
 		} catch (Exception e) {
@@ -44,7 +46,7 @@ public class ModelBuilder {
 		}
 	}
 
-	public Classifier train(String trainArffFile) throws Exception {
+	public Model train(String trainArffFile) throws Exception {
 
 		ArffReader arffTrain = new ArffReader(new FileReader(trainArffFile));
 		Instances trainingSet = arffTrain.getData();
@@ -53,16 +55,16 @@ public class ModelBuilder {
 		SMO classifier = new SMO();
 		classifier.buildClassifier(trainingSet);
 
-		return classifier;
+		return new Model(classifier,trainingSet);
 	}
 
-	public void test(String testArffFile,Classifier classifier) throws Exception{
+	public void test(String testArffFile,Instances trainingSet,Classifier classifier) throws Exception{
 		
 		ArffReader arff = new ArffReader(new FileReader(testArffFile));
 		Instances testingSet= arff.getData();
 		testingSet.setClassIndex(testingSet.numAttributes()-1);
 		
-		Evaluation eTest = new Evaluation(testingSet);
+		Evaluation eTest = new Evaluation(trainingSet);
 		eTest.evaluateModel(classifier, testingSet);
 		  		
 		String strSummary = eTest.toSummaryString(); 

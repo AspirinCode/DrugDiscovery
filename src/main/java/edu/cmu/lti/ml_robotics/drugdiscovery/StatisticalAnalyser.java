@@ -10,6 +10,8 @@ public class StatisticalAnalyser {
 	//static int numFeaturesThrombin = 139351;
 	//static int numFeaturesDorothea = 100000;
 	int numFeatures;
+	int numPosSample;
+	int numNegSample;
 	
 	public static void main(String args[]) {
 
@@ -17,8 +19,11 @@ public class StatisticalAnalyser {
 			StatisticalAnalyser main = new StatisticalAnalyser();
 			String trainFile = "data/Thrombin.trainset/Thrombin.train";
 			String labelFile = "data/Thrombin.trainset/thrombin.labels";
-			main.getNumFeatures("data/Dorothea.trainset/dorothea_train.data");
+			//main.getNumFeatures("data/Dorothea.trainset/dorothea_train.data");
 			//main.findSignificantFeatures(trainFile, labelFile);
+			main.findPosNegSampleStatistics("data/Dorothea.testset/dorothea_valid.labels");
+			System.out.println("Positive: "+main.numPosSample);
+			System.out.println("Negative: "+main.numNegSample);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -49,6 +54,31 @@ public class StatisticalAnalyser {
 		numFeatures=maxFeatureId;
 		return maxFeatureId;
 	}
+	
+	public void findPosNegSampleStatistics(String labelFile) throws Exception{
+		
+		BufferedReader bfr=new BufferedReader(new FileReader(labelFile));
+		String str;
+		int nPos=0;
+		int nNeg=0;
+		while((str=bfr.readLine())!=null){
+			str=str.trim();
+			if(str.startsWith("1")||str.startsWith("A")){
+				nPos++;
+			}else{
+				nNeg++;
+			}
+		}
+		bfr.close();
+		bfr=null;
+		
+		this.numNegSample=nNeg;
+		this.numPosSample=nPos;
+	}
+	
+	public int getNumNegSamples(){return this.numNegSample;}
+	public int getNumPosSamples(){return this.numPosSample;}
+	
 	
 	public void findSignificantFeatures(String trainFile, String labelFile)
 			throws Exception {

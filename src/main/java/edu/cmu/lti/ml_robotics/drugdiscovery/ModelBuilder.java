@@ -20,7 +20,7 @@ public class ModelBuilder {
 			ModelBuilder modelBuilder=new ModelBuilder();
 			
 			/*String orgTrainingFile="data/Dorothea.trainset/dorothea_train.data";
-			String labelFile="data/Dorothea.trainset/dorothea_train.labels";
+
 			String trainArffFile="data/Dorothea.trainset/dorothea_train.data.arff";*/
 			
 			String orgTrainingFile="train.dorothea";
@@ -33,10 +33,18 @@ public class ModelBuilder {
 			String trainArffFile="data/Thrombin.trainset/Thrombin.train.arff";*/
 			
 			/*String orgTestFile="data/Dorothea.testset/dorothea_valid.data";
+			String trainArffFile="data/Dorothea.trainset/dorothea_train.data.arff";
+			String orgTestFile="data/Dorothea.testset/dorothea_valid.data";
 			String testLabelFile="data/Dorothea.testset/dorothea_valid.labels";
 			String testArffFile="data/Dorothea.testset/dorothea_valid.data.arff";*/
 			
 			/*String orgTestFile="data/Thrombin.testset/Thrombin.test";
+			String testArffFile="data/Dorothea.testset/dorothea_valid.data.arff";
+			/*
+			String orgTrainingFile="data/Thrombin.trainset/Thrombin.train";
+			String labelFile="data/Thrombin.trainset/thrombin.labels";
+			String trainArffFile="data/Thrombin.trainset/Thrombin.train.arff";
+			String orgTestFile="data/Thrombin.testset/Thrombin.test";
 			String testLabelFile="data/Thrombin.testset/ThrombinKey";
 			String testArffFile="data/Thrombin.testset/Thrombin.test.arff.back";*/
 			
@@ -45,6 +53,8 @@ public class ModelBuilder {
 			String testArffFile="train1.dorothea.arff.back";
 			
 			
+
+		
 			StatisticalAnalyser statsAnalyser=new StatisticalAnalyser();
 			int numFeatures=statsAnalyser.getNumFeatures(orgTrainingFile);
 			Preprocessing prepr=new Preprocessing(numFeatures);

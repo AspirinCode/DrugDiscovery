@@ -7,7 +7,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-
+import java.util.Set;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.LinearRegression;
@@ -61,7 +61,7 @@ public class Preprocessing {
 			double fraction=0.3;
 			main.selectFractionOfTrainingData(trainFile, labelFile, fraction);
 
-			// main.findUniqueFeatures();
+			main.findUniqueFeatures(trainFile,validationFile);
 			//main.separateLabelsFromThrombinDataSet(validationFile, "data/Thrombin.testset/Thrombin.test",testLabelFile);
 			//main.convertIntoARFF(trainFile,labelFile,arffTrainFile);
 			
@@ -247,25 +247,60 @@ public class Preprocessing {
 		BufferedReader bfr = new BufferedReader(new FileReader(
 				trainFile));//"data/Dorothea.trainset/dorothea_train.data"
 		String str;
-		HashSet<Integer> features = new HashSet<Integer>();
+		//HashSet<Integer> features = new HashSet<Integer>();
+		
+		HashMap<Integer, HashSet<Integer>> features = new HashMap<Integer, HashSet<Integer>>();
+		int row =0;
 		while ((str = bfr.readLine()) != null) {
-
+			row++;
 			String rec[] = str.trim().split("[ ]");
 
 			for (int i = 0; i < rec.length; i++) {
 				int feature = Integer.parseInt(rec[i]);
-				if (!features.contains(feature)) {
-					features.add(feature);
+				HashSet<Integer> temp;
+				if(features.containsKey(feature)){
+				temp = features.get(feature);
 				}
-			}
+				else{
+					temp = new HashSet<Integer>();
+				}
+				temp.add(row);
+
+				features.put(feature, temp);
+				}
 			System.out.println("Size: " + features.size());
 
 		}
 		bfr.close();
 		bfr = null;
-
+		HashMap<Integer, Double> mi = new HashMap<Integer,Double>();
+		HashSet<Integer> discardedFeatures = new HashSet<Integer>();
+		Set<Integer> keys = features.keySet();
+		for(Integer i: keys){
+			for(Integer j: keys){
+				if(i==j)
+					continue;
+				HashSet<Integer> a,b;
+				a = features.get(i);
+				b= features.get(j);
+				for(int r=1; r<=row; r++){
+					
+				Double px= 0.0, py = 0.0, pxy = 0.0;
+				if(a.contains(r))
+					px = 1.0/a.size();
+				if(b.contains(r))
+					py  = 1.0/b.size();
+				if(a.contains(r) && b.contains(r))
+					pxy = 1/
+				
+				}
+				
+				
+			}
+		}
+		
 		System.out.println("Total Unique Features: " + features.size());
-
+/*
 		BufferedReader bfr1 = new BufferedReader(new FileReader(
 				testFile));//"data/Dorothea.testset/dorothea_test.data"
 
@@ -283,6 +318,7 @@ public class Preprocessing {
 		}
 		bfr1.close();
 		bfr1 = null;
+		*/
 
 	}
 	

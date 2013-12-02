@@ -5,9 +5,13 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.LinearRegression;
@@ -20,7 +24,7 @@ import weka.core.Instances;
 import weka.core.SparseInstance;
 import weka.core.converters.ArffLoader.ArffReader;
 
-public class Preprocessing {
+public class Preprocessing<CustomComparator> {
 
 	//static int numFeaturesDorothea = 100000;
 	//static int numFeaturesThrombin=139351;
@@ -61,7 +65,7 @@ public class Preprocessing {
 			double fraction=0.3;
 			main.selectFractionOfTrainingData(trainFile, labelFile, fraction);
 
-			main.findUniqueFeatures(trainFile,validationFile);
+			main.findUniqueFeatures(trainFile,labelFile);
 			//main.separateLabelsFromThrombinDataSet(validationFile, "data/Thrombin.testset/Thrombin.test",testLabelFile);
 			//main.convertIntoARFF(trainFile,labelFile,arffTrainFile);
 			
@@ -242,7 +246,7 @@ public class Preprocessing {
 		
 	}
 
-	public void findUniqueFeatures(String trainFile,String testFile) throws Exception {
+	public void findUniqueFeatures(String trainFile,String labelFile) throws Exception {
 
 		BufferedReader bfr = new BufferedReader(new FileReader(
 				trainFile));//"data/Dorothea.trainset/dorothea_train.data"
@@ -252,7 +256,6 @@ public class Preprocessing {
 		HashMap<Integer, HashSet<Integer>> features = new HashMap<Integer, HashSet<Integer>>();
 		int row =0;
 		while ((str = bfr.readLine()) != null) {
-			row++;
 			String rec[] = str.trim().split("[ ]");
 
 			for (int i = 0; i < rec.length; i++) {
@@ -268,38 +271,132 @@ public class Preprocessing {
 
 				features.put(feature, temp);
 				}
-			System.out.println("Size: " + features.size());
+			//System.out.println("Size: " + features.size());
+			row++;
 
 		}
+		int totalRows = row;
 		bfr.close();
 		bfr = null;
+		
+		bfr = new BufferedReader(new FileReader(
+				labelFile));
+		ArrayList<Integer> labels  = new ArrayList<Integer>();
+		HashSet<Integer> posRows = new HashSet<Integer>();
+		HashSet<Integer> negRows = new HashSet<Integer>();
+
+		row =0;
+		while ((str = bfr.readLine()) != null) {
+			labels.add(Integer.parseInt(str.trim()));
+			if(Integer.parseInt(str.trim()) == -1)
+				negRows.add(row);
+			else 
+				posRows.add(row);
+			
+			row++;
+		}
+		
+		HashSet<Integer> allRows = new HashSet<Integer>();
+		for(int r=0;r<totalRows;r++){
+			allRows.add(r);
+		}
+	
+			
 		HashMap<Integer, Double> mi = new HashMap<Integer,Double>();
 		HashSet<Integer> discardedFeatures = new HashSet<Integer>();
 		Set<Integer> keys = features.keySet();
 		for(Integer i: keys){
-			for(Integer j: keys){
-				if(i==j)
-					continue;
-				HashSet<Integer> a,b;
-				a = features.get(i);
-				b= features.get(j);
-				for(int r=1; r<=row; r++){
-					
-				Double px= 0.0, py = 0.0, pxy = 0.0;
+				HashSet<Integer> a = features.get(i);
+				Double m =0.0;
+				for(int r=0;r<totalRows;r++){	
+					Double px= 0.0, py = 0.0, pxy = 0.0;
 				if(a.contains(r))
 					px = 1.0/a.size();
-				if(b.contains(r))
-					py  = 1.0/b.size();
-				if(a.contains(r) && b.contains(r))
-					pxy = 1/
-				
+				else 
+					px = 1.0/(totalRows-a.size());
+				if(labels.get(r) == 1)
+					py = 1.0/posRows.size();
+				else
+					py = 1.0/negRows.size();
+				int s;
+
+				if(a.contains(r) && labels.get(r) == 1){
+					Set<Integer> intersection = new HashSet<Integer>(a);
+
+					intersection.retainAll(posRows);
+					pxy = 1.0/intersection.size();
+					
 				}
+				else if(a.contains(r) && labels.get(r) == -1){
+					Set<Integer> intersection = new HashSet<Integer>(a);
+
+					intersection.retainAll(negRows);
+					pxy = 1.0/intersection.size();
+					
+				}
+				else if(!a.contains(r) && labels.get(r) == 1){
+					Set<Integer> intersection = new HashSet<Integer>(posRows);
+					Set<Integer> temp = new HashSet<Integer>(allRows);
+					temp.removeAll(a);
+					intersection.retainAll(temp);
+					pxy = 1.0/intersection.size();
+
+				}
+				else{
+					Set<Integer> intersection = new HashSet<Integer>(negRows);
+					Set<Integer> temp = new HashSet<Integer>(allRows);
+					temp.removeAll(a);
+					intersection.retainAll(temp);
+					pxy = 1.0/intersection.size();				
+				}
+				m += pxy * Math.log(pxy/(px*py));
 				
 				
 			}
-		}
+				mi.put(i, m);
+				System.out.println(m);
+	}
 		
 		System.out.println("Total Unique Features: " + features.size());
+		
+		
+		class CustomComparator implements Comparator<Integer> {
+
+			Map<Integer, Double> base;
+
+			public CustomComparator(HashMap<Integer, Double> scores) {
+				this.base = scores;
+			}
+
+			public int compare(Integer arg0, Integer arg1) {
+				if (base.get(arg0) < base.get(arg1)) {
+					return 1;
+				} else if (base.get(arg0) > base.get(arg1)) {
+					return -1;
+				} else {
+					if (arg0 < arg1)
+						return -1;
+					else
+						return 1;
+				}
+			}
+
+		}
+		
+		CustomComparator c = new CustomComparator(mi);
+
+		TreeMap<Integer, Double> sortedMap = new TreeMap<Integer, Double>(c);
+		sortedMap.putAll(mi);
+		int i=0;
+		for (Entry<Integer, Double> entry : sortedMap.entrySet()) {
+			System.out.println(entry.getKey() + ":" + entry.getValue() );
+			i++;
+			if (i == 201)
+				break;
+			
+		}
+
+
 /*
 		BufferedReader bfr1 = new BufferedReader(new FileReader(
 				testFile));//"data/Dorothea.testset/dorothea_test.data"
